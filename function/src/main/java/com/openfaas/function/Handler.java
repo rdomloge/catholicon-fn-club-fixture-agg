@@ -9,6 +9,7 @@ import com.openfaas.model.IRequest;
 import com.openfaas.model.IResponse;
 import com.openfaas.model.Response;
 
+import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 
@@ -52,11 +53,17 @@ public class Handler extends com.openfaas.model.AbstractHandler {
 
     private String fetchFixture(Map<String, String> query) throws IOException {
         int fixtureId = Integer.parseInt(query.get(FIXTURE));
+        System.out.println("Fetching fixture "+fixtureId);
         OkHttpClient client = new OkHttpClient();
+        System.out.println("Client ready");
         Request request = new Request.Builder().url(
             "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
         
-        okhttp3.Response response = client.newCall(request).execute();
+        System.out.println("Request ready");
+        Call call = client.newCall(request);
+        System.out.println("Call ready - executing");
+        okhttp3.Response response = call.execute();
+        System.out.println("Response received");
 
         if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string());
         System.out.println("Response was successful");
