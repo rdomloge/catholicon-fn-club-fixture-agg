@@ -58,7 +58,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         
         okhttp3.Response response = client.newCall(request).execute();
 
-        if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string())
+        if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string());
         System.out.println("Response was successful");
         return response.body().string();
     }
