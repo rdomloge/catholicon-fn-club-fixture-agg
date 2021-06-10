@@ -32,6 +32,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             res.setStatusCode(400);
             return res;
         } catch (IOException e) {
+            e.printStackTrace();
             res = new Response();
             res.setBody("Could not call downstream service: "+e.getMessage());
             res.setStatusCode(503);
@@ -50,7 +51,8 @@ public class Handler extends com.openfaas.model.AbstractHandler {
     private String fetchFixture(Map<String, String> query) throws IOException {
         int fixtureId = Integer.parseInt(query.get(FIXTURE));
         OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url("http://rdomloge.entrydns.org:84/fixtures/"+fixtureId).build();
+        Request request = new Request.Builder().url(
+            "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
         
         return client.newCall(request).execute().body().string();
     }
