@@ -29,3 +29,5 @@ function/.gradle
 function/.project
 function/.settings
 function/.classpath
+
+settings.json
