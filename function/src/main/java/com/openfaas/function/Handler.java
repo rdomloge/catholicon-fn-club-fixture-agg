@@ -59,7 +59,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         System.out.println("Fetching fixture "+fixtureId);
         OkHttpClient client = new OkHttpClient.Builder()
             .cache(new Cache(new File("/tmp/okhttpclientcache"), 1000))
-            .addInterceptor(new HttpLoggingInterceptor())
+            // .addInterceptor(new HttpLoggingInterceptor())
             .build();
         System.out.println("Client ready");
         Request request = new Request.Builder().url(
