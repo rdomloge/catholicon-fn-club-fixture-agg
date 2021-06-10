@@ -21,9 +21,11 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         Map<String, String> query = req.getQuery();
 
         try {
-
+            System.out.println("Handling "+req.getPathRaw()+"::"+req.getQueryRaw());
             checkRequest(query);
+            System.out.println("Request OK");
             String fixtureJson = fetchFixture(query);
+            System.out.println("Fetched fixture: "+fixtureJson);
             res.setBody(fixtureJson);
         }
         catch(BadRequestException brex) {
