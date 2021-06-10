@@ -25,7 +25,7 @@ hs_err_pid*
 template
 build
 
-dockerfile/.gradle
-dockerfile/.project
-dockerfile/.settings
-dockerfile/.classpath
+function/.gradle
+function/.project
+function/.settings
+function/.classpath
