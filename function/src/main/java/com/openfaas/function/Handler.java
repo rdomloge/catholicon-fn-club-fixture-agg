@@ -56,6 +56,10 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         Request request = new Request.Builder().url(
             "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
         
-        return client.newCall(request).execute().body().string();
+        okhttp3.Response response = client.newCall(request).execute();
+
+        if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string())
+        System.out.println("Response was successful");
+        return response.body().string();
     }
 }
