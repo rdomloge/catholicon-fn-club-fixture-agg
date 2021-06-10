@@ -1,5 +1,6 @@
 package com.openfaas.function;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.Map;
@@ -9,9 +10,11 @@ import com.openfaas.model.IRequest;
 import com.openfaas.model.IResponse;
 import com.openfaas.model.Response;
 
+import okhttp3.Cache;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 public class Handler extends com.openfaas.model.AbstractHandler {
 
@@ -54,7 +57,10 @@ public class Handler extends com.openfaas.model.AbstractHandler {
     private String fetchFixture(Map<String, String> query) throws IOException {
         int fixtureId = Integer.parseInt(query.get(FIXTURE));
         System.out.println("Fetching fixture "+fixtureId);
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+            .cache(new Cache(new File("/tmp/okhttpclientcache"), 1000))
+            .addInterceptor(new HttpLoggingInterceptor())
+            .build();
         System.out.println("Client ready");
         Request request = new Request.Builder().url(
             "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
