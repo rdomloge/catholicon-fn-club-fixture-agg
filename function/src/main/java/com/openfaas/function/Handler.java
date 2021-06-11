@@ -43,6 +43,13 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             res.setBody("Could not call downstream service: "+e.getMessage());
             res.setStatusCode(503);
             return res;
+        } catch(Exception e) {
+            System.out.println("Caught exception ("+e.getClass().getSimpleName()+"): "+e.getMessage());
+            e.printStackTrace();
+            res = new Response();
+            res.setBody("General error("+e.getClass().getSimpleName()+"): "+e.getMessage());
+            res.setStatusCode(503);
+            return res;
         }
 
 	    return res;
@@ -62,17 +69,18 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             // .addInterceptor(new HttpLoggingInterceptor())
             .build();
         System.out.println("Client ready");
-        Request request = new Request.Builder().url(
-            "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
+        // Request request = new Request.Builder().url(
+        //     "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
         
-        System.out.println("Request ready");
-        Call call = client.newCall(request);
-        System.out.println("Call ready - executing");
-        okhttp3.Response response = call.execute();
-        System.out.println("Response received");
+        // System.out.println("Request ready");
+        // Call call = client.newCall(request);
+        // System.out.println("Call ready - executing");
+        // okhttp3.Response response = call.execute();
+        // System.out.println("Response received");
 
-        if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string());
-        System.out.println("Response was successful");
-        return response.body().string();
+        // if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string());
+        // System.out.println("Response was successful");
+        // return response.body().string();
+        return "debugging";
     }
 }
