@@ -10,9 +10,9 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:23.0'
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
-    implementation 'com.squareup.okio:okio:1.14.1'
-    implementation group: 'com.squareup.okhttp3', name: 'logging-interceptor', version: '3.10.0'
+    compile 'com.squareup.okhttp3:okhttp:3.10.0'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.10.0'
+    compile 'com.squareup.okio:okio:1.14.1'
 
 
     // Use JUnit test framework
