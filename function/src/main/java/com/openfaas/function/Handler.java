@@ -2,10 +2,12 @@ package com.openfaas.function;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+
 import com.openfaas.model.IRequest;
 import com.openfaas.model.IResponse;
 import com.openfaas.model.Response;
@@ -32,10 +34,18 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         try {
             System.out.println("Handling "+req.getPathRaw()+"::"+req.getQueryRaw());
             checkRequest(query);
+            
             String fixtureJson = fetchFixture(query);
+            Type type = new TypeToken<Map<String, String>>(){}.getType();
             Gson gson = new Gson();
-            Fixture fixture = gson.fromJson(fixtureJson, Fixture.class);
-            System.out.println("Fixture deserialised: "+fixture.getExternalFixtureId());
+            Map<String, String>  fixtureMap = gson.fromJson(fixtureJson, type);
+            System.out.println("Fixture deserialised: " + fixtureMap.get("externalFixtureId"));
+
+            int teamId = Integer.parseInt(fixtureMap.get("homeTeamId"));
+            String clubJson = fetchClub(teamId);
+            Map<String, String>  clubMap = gson.fromJson(clubJson, type);
+            System.out.println("Deserialised club: "+clubMap.get("clubName"));
+
             res.setBody(fixtureJson);
         }
         catch(BadRequestException brex) {
@@ -58,6 +68,17 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         if( ! query.containsKey(FIXTURE)) {
             throw new BadRequestException("Missing fixture ID");
         }
+    }
+
+    private String fetchClub(int teamId) throws IOException {
+        Request request = new Request.Builder().url(
+            "http://rdomloge.entrydns.org:85/clubs/search/findClubByTeamId?teamId="+teamId).build();
+        
+        Call call = client.newCall(request);
+        okhttp3.Response response = call.execute();
+
+        if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string());
+        return response.body().string();
     }
 
     private String fetchFixture(Map<String, String> query) throws IOException {
