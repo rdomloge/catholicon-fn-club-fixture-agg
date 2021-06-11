@@ -2,9 +2,7 @@ package com.openfaas.function;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.http.HttpResponse;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.openfaas.model.IRequest;
 import com.openfaas.model.IResponse;
@@ -20,6 +18,11 @@ public class Handler extends com.openfaas.model.AbstractHandler {
 
     private static final String FIXTURE = "fixtureId";
 
+    private static final OkHttpClient client = new OkHttpClient.Builder()
+        .addNetworkInterceptor(new HttpLoggingInterceptor())
+        .cache(new Cache(new File("/tmp/catholicon-fn-club-fixture-agg-cache"), 1000))
+        .build();
+
     public IResponse Handle(IRequest req) {
         Response res = new Response();
         Map<String, String> query = req.getQuery();
@@ -32,27 +35,19 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             System.out.println("Fetched fixture: "+fixtureJson);
             res.setBody(fixtureJson);
         }
-        // catch(BadRequestException brex) {
-        //     res = new Response();
-        //     res.setBody(brex.getMessage());
-        //     res.setStatusCode(400);
-        //     return res;
-        // } 
-        // catch (IOException e) {
-        //     e.printStackTrace();
-        //     res = new Response();
-        //     res.setBody("Could not call downstream service: "+e.getMessage());
-        //     res.setStatusCode(503);
-        //     return res;
-        // } 
-        catch(Exception e) {
-            System.out.println("Caught exception ("+e.getClass().getSimpleName()+"): "+e.getMessage());
+        catch(BadRequestException brex) {
+            res = new Response();
+            res.setBody(brex.getMessage());
+            res.setStatusCode(400);
+            return res;
+        } 
+        catch (IOException e) {
             e.printStackTrace();
             res = new Response();
-            res.setBody("General error("+e.getClass().getSimpleName()+"): "+e.getMessage());
+            res.setBody("Could not call downstream service: "+e.getMessage());
             res.setStatusCode(503);
             return res;
-        }
+        } 
 
 	    return res;
     }
@@ -66,25 +61,19 @@ public class Handler extends com.openfaas.model.AbstractHandler {
     private String fetchFixture(Map<String, String> query) throws IOException {
         int fixtureId = Integer.parseInt(query.get(FIXTURE));
         System.out.println("Fetching fixture "+fixtureId);
-        try {
-            OkHttpClient client = new OkHttpClient();
-        }
-        catch(Throwable t) {
-            System.out.println("Caught throwable: "+t.getClass().getSimpleName()+": "+t.getMessage());
-        }
-        System.out.println("Client ready");
-        // Request request = new Request.Builder().url(
-        //     "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
         
-        // System.out.println("Request ready");
-        // Call call = client.newCall(request);
-        // System.out.println("Call ready - executing");
-        // okhttp3.Response response = call.execute();
-        // System.out.println("Response received");
+        System.out.println("Client ready");
+        Request request = new Request.Builder().url(
+            "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
+        
+        System.out.println("Request ready");
+        Call call = client.newCall(request);
+        System.out.println("Call ready - executing");
+        okhttp3.Response response = call.execute();
+        System.out.println("Response received");
 
-        // if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string());
-        // System.out.println("Response was successful");
-        // return response.body().string();
-        return "debugging";
+        if( ! response.isSuccessful()) throw new IOException("Request to fixture failed("+response.code()+"): "+response.body().string());
+        System.out.println("Response was successful");
+        return response.body().string();
     }
 }
