@@ -59,7 +59,11 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             res.setBody("Could not call downstream service: "+e.getMessage());
             res.setStatusCode(503);
             return res;
-        } 
+        }
+        catch(Throwable t) {
+            t.printStackTrace(System.out);
+            System.out.println("Error");
+        }
 
 	    return res;
     }
