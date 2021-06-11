@@ -66,7 +66,12 @@ public class Handler extends com.openfaas.model.AbstractHandler {
     private String fetchFixture(Map<String, String> query) throws IOException {
         int fixtureId = Integer.parseInt(query.get(FIXTURE));
         System.out.println("Fetching fixture "+fixtureId);
-        OkHttpClient client = new OkHttpClient();
+        try {
+            OkHttpClient client = new OkHttpClient();
+        }
+        catch(Throwable t) {
+            System.out.println("Caught throwable: "+t.getClass().getSimpleName()+": "+t.getMessage());
+        }
         System.out.println("Client ready");
         // Request request = new Request.Builder().url(
         //     "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
