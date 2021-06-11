@@ -29,7 +29,15 @@ import okhttp3.logging.HttpLoggingInterceptor;
 
 public class Handler extends com.openfaas.model.AbstractHandler {
 
-    private static final String FIXTURE = "fixtureId";
+    private static final String FIXTURE_PARAM = "fixtureId";
+
+    // public static final String FIXTURE_HOSTPORT = "rdomloge.entrydns.org:81";
+    public static final String FIXTURE_HOSTPORT = "catholicon-ms-matchcard-service:84";
+    public static final String FIXTURE_URL = "http://"+FIXTURE_HOSTPORT+"/fixtures/search/findByExternalFixtureId?externalFixtureId=%1$s";
+
+    // public static final String CLUBS_HOSTPORT = "rdomloge.entrydns.org:81";
+    public static final String CLUBS_HOSTPORT = "catholicon-ms-club-service:85";
+    public static final String CLUBS_URL = "http://"+CLUBS_HOSTPORT+"/clubs/search/findClubByTeamId?teamId=%1$s";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
         .addNetworkInterceptor(new HttpLoggingInterceptor())
@@ -43,7 +51,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         try {
             System.out.println("Handling "+req.getPathRaw()+"::"+req.getQueryRaw());
             checkRequest(query);
-            int fixtureId = Integer.parseInt(query.get(FIXTURE));
+            int fixtureId = Integer.parseInt(query.get(FIXTURE_PARAM));
             res.setBody(merge(fixtureId));
         }
         catch(BadRequestException brex) {
@@ -119,14 +127,13 @@ public class Handler extends com.openfaas.model.AbstractHandler {
 	}
 
     private void checkRequest(Map<String, String> query) throws BadRequestException {
-        if( ! query.containsKey(FIXTURE)) {
+        if( ! query.containsKey(FIXTURE_PARAM)) {
             throw new BadRequestException("Missing fixture ID");
         }
     }
 
     private String fetchClub(int teamId) throws IOException {
-        Request request = new Request.Builder().url(
-            "http://rdomloge.entrydns.org:81/clubs/search/findClubByTeamId?teamId="+teamId).build();
+        Request request = new Request.Builder().url(String.format(CLUBS_URL, teamId)).build();
         
         Call call = client.newCall(request);
         okhttp3.Response response = call.execute();
@@ -137,9 +144,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
 
     private String fetchFixture(int fixtureId) throws IOException {
         
-        
-        Request request = new Request.Builder().url(
-            "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
+        Request request = new Request.Builder().url(String.format(FIXTURE_URL, fixtureId)).build();
         
         Call call = client.newCall(request);
         okhttp3.Response response = call.execute();
