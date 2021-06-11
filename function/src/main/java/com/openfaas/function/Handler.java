@@ -90,10 +90,16 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         for(int i=0; i < sessions.size(); i++) {
             JsonObject session = sessions.get(i).getAsJsonObject();
             int dayOfWeek = daysAsJodaDayOfWeekInt(session.get("days").getAsString());
-            if(dayOfWeek == fixtureDate.getDayOfWeek()) return session;
+            if(dayOfWeek == fixtureDate.getDayOfWeek()) {
+                System.out.println("Match");
+                return session;
+            }
+            else {
+                System.out.println(session.get("days").getAsString() + "("+dayOfWeek+") does not match "+fixtureDate.getDayOfWeek());
+            }
         }
 
-        throw new RuntimeException("Could not find a matching session");
+        throw new RuntimeException("Could not find a matching session for date "+fixtureDateStr+" on "+fixtureDate.getDayOfWeek());
     }
 
     public int daysAsJodaDayOfWeekInt(String days) {
