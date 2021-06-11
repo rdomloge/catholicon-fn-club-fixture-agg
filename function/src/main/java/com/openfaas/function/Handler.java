@@ -2,12 +2,10 @@ package com.openfaas.function;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.Map;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.openfaas.model.IRequest;
 import com.openfaas.model.IResponse;
 import com.openfaas.model.Response;
@@ -36,15 +34,13 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             checkRequest(query);
             
             String fixtureJson = fetchFixture(query);
-            Type type = new TypeToken<Map<String, String>>(){}.getType();
-            Gson gson = new Gson();
-            Map<String, String>  fixtureMap = gson.fromJson(fixtureJson, type);
-            System.out.println("Fixture deserialised: " + fixtureMap.get("externalFixtureId"));
+            JsonObject fixture = JsonParser.parseString(fixtureJson).getAsJsonObject();
+            System.out.println("Fixture deserialised: " + fixture.get("externalFixtureId").getAsInt());
 
-            int teamId = Integer.parseInt(fixtureMap.get("homeTeamId"));
+            int teamId = fixture.get("homeTeamId").getAsInt();
             String clubJson = fetchClub(teamId);
-            Map<String, String>  clubMap = gson.fromJson(clubJson, type);
-            System.out.println("Deserialised club: "+clubMap.get("clubName"));
+            JsonObject  club = JsonParser.parseString(clubJson).getAsJsonObject();
+            System.out.println("Deserialised club: "+club.get("clubName").getAsString());
 
             res.setBody(fixtureJson);
         }
