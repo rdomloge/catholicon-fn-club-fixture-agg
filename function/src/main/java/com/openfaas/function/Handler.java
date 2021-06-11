@@ -32,18 +32,20 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             System.out.println("Fetched fixture: "+fixtureJson);
             res.setBody(fixtureJson);
         }
-        catch(BadRequestException brex) {
-            res = new Response();
-            res.setBody(brex.getMessage());
-            res.setStatusCode(400);
-            return res;
-        } catch (IOException e) {
-            e.printStackTrace();
-            res = new Response();
-            res.setBody("Could not call downstream service: "+e.getMessage());
-            res.setStatusCode(503);
-            return res;
-        } catch(Exception e) {
+        // catch(BadRequestException brex) {
+        //     res = new Response();
+        //     res.setBody(brex.getMessage());
+        //     res.setStatusCode(400);
+        //     return res;
+        // } 
+        // catch (IOException e) {
+        //     e.printStackTrace();
+        //     res = new Response();
+        //     res.setBody("Could not call downstream service: "+e.getMessage());
+        //     res.setStatusCode(503);
+        //     return res;
+        // } 
+        catch(Exception e) {
             System.out.println("Caught exception ("+e.getClass().getSimpleName()+"): "+e.getMessage());
             e.printStackTrace();
             res = new Response();
