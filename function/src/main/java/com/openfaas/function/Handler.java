@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,19 +43,8 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         try {
             System.out.println("Handling "+req.getPathRaw()+"::"+req.getQueryRaw());
             checkRequest(query);
-            
-            String fixtureJson = fetchFixture(query);
-            JsonObject fixture = JsonParser.parseString(fixtureJson).getAsJsonObject();
-
-            JsonObject matchSession = fetchMatchSessionForFixture(
-                fixture.get("homeTeamId").getAsInt(), 
-                fixture.get("matchDate").getAsString());
-
-            JsonObject details = new JsonObject();
-            details.add("fixture", fixture);
-            details.add("session", matchSession);
-
-            res.setBody(details.getAsString());
+            int fixtureId = Integer.parseInt(query.get(FIXTURE));
+            res.setBody(merge(fixtureId));
         }
         catch(BadRequestException brex) {
             res = new Response();
@@ -76,28 +66,42 @@ public class Handler extends com.openfaas.model.AbstractHandler {
 	    return res;
     }
 
+    private String merge(int fixtureId) throws IOException, ParseException {
+        String fixtureJson = fetchFixture(fixtureId);
+        JsonObject fixture = JsonParser.parseString(fixtureJson).getAsJsonObject();
 
-    private static final SimpleDateFormat fixtureDateFormat = new SimpleDateFormat("YYYY-mm-DD");
+        JsonObject matchSession = fetchMatchSessionForFixture(
+            fixture.get("homeTeamId").getAsInt(), 
+            fixture.get("matchDate").getAsString());
+
+        JsonObject details = new JsonObject();
+        details.add("fixture", fixture);
+        details.add("session", matchSession);
+        return details.toString();
+    }
+
+    public static void main(String[] args) throws IOException, ParseException {
+        Handler h = new Handler();
+        String merged = h.merge(2282);
+        System.out.println("Merged: "+merged);
+    }
+
+
+    private static final SimpleDateFormat fixtureDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     private JsonObject fetchMatchSessionForFixture(int teamId, String fixtureDateStr) throws IOException, ParseException {
         
-        DateTime fixtureDate = new DateTime(fixtureDateFormat.parse(fixtureDateStr).getTime());
+        Date parse = fixtureDateFormat.parse(fixtureDateStr);
+        DateTime fixtureDate = new DateTime(parse.getTime());
         
         String clubJson = fetchClub(teamId);
         JsonObject club = JsonParser.parseString(clubJson).getAsJsonObject();
         JsonElement matchSessions = club.get("matchSessions");
         JsonArray sessions = matchSessions.getAsJsonArray();
-        System.out.println("Checking "+sessions.size()+" sessions for a match to "+fixtureDate.getDayOfWeek());
         for(int i=0; i < sessions.size(); i++) {
             JsonObject session = sessions.get(i).getAsJsonObject();
             int dayOfWeek = daysAsJodaDayOfWeekInt(session.get("days").getAsString());
-            if(dayOfWeek == fixtureDate.getDayOfWeek()) {
-                System.out.println("Match");
-                return session;
-            }
-            else {
-                System.out.println(session.get("days").getAsString() + "("+dayOfWeek+") does not match "+fixtureDate.getDayOfWeek());
-            }
+            if(dayOfWeek == fixtureDate.getDayOfWeek()) return session;
         }
 
         throw new RuntimeException("Could not find a matching session for date "+fixtureDateStr+" on "+fixtureDate.getDayOfWeek());
@@ -131,8 +135,8 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         return response.body().string();
     }
 
-    private String fetchFixture(Map<String, String> query) throws IOException {
-        int fixtureId = Integer.parseInt(query.get(FIXTURE));
+    private String fetchFixture(int fixtureId) throws IOException {
+        
         
         Request request = new Request.Builder().url(
             "http://rdomloge.entrydns.org:81/fixtures/search/findByExternalFixtureId?externalFixtureId="+fixtureId).build();
