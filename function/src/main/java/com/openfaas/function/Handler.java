@@ -87,6 +87,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
         JsonObject club = JsonParser.parseString(clubJson).getAsJsonObject();
         JsonElement matchSessions = club.get("matchSessions");
         JsonArray sessions = matchSessions.getAsJsonArray();
+        System.out.println("Checking "+sessions.size()+" sessions for a match to "+fixtureDate.getDayOfWeek());
         for(int i=0; i < sessions.size(); i++) {
             JsonObject session = sessions.get(i).getAsJsonObject();
             int dayOfWeek = daysAsJodaDayOfWeekInt(session.get("days").getAsString());
