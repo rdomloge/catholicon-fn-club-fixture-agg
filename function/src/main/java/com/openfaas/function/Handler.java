@@ -72,7 +72,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
 
     private String fetchClub(int teamId) throws IOException {
         Request request = new Request.Builder().url(
-            "http://rdomloge.entrydns.org:85/clubs/search/findClubByTeamId?teamId="+teamId).build();
+            "http://rdomloge.entrydns.org:81/clubs/search/findClubByTeamId?teamId="+teamId).build();
         
         Call call = client.newCall(request);
         okhttp3.Response response = call.execute();
