@@ -32,11 +32,11 @@ public class Handler extends com.openfaas.model.AbstractHandler {
     private static final String FIXTURE_PARAM = "fixtureId";
 
     // public static final String FIXTURE_HOSTPORT = "rdomloge.entrydns.org:81";
-    public static final String FIXTURE_HOSTPORT = "catholicon-ms-matchcard-service.catholicon.svc.cluster.local:84";
+    public static final String FIXTURE_HOSTPORT = "catholicon-ms-matchcard-service.catholicon:84";
     public static final String FIXTURE_URL = "http://"+FIXTURE_HOSTPORT+"/fixtures/search/findByExternalFixtureId?externalFixtureId=%1$s";
 
     // public static final String CLUBS_HOSTPORT = "rdomloge.entrydns.org:81";
-    public static final String CLUBS_HOSTPORT = "catholicon-ms-club-service.catholicon.svc.cluster.local:85";
+    public static final String CLUBS_HOSTPORT = "catholicon-ms-club-service.catholicon:85";
     public static final String CLUBS_URL = "http://"+CLUBS_HOSTPORT+"/clubs/search/findClubByTeamId?teamId=%1$s";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
