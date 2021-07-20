@@ -1,3 +1,3 @@
-sudo faas-cli build -f function.yml --image dockerfile-test && \
-sudo docker tag function rdomloge/dockerfile-test && \
-sudo docker push rdomloge/dockerfile-test
+sudo faas-cli build -f function.yml --image catholicon-fn-club-fixture-agg && \
+sudo docker tag function rdomloge/catholicon-fn-club-fixture-agg && \
+sudo docker push rdomloge/catholicon-fn-club-fixture-agg
