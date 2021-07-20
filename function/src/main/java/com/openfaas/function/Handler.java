@@ -2,13 +2,12 @@ package com.openfaas.function;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-
-import javax.management.RuntimeErrorException;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -67,8 +66,13 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             return res;
         }
         catch(Throwable t) {
-            t.printStackTrace(System.out);
-            System.out.println("Error");
+            res = new Response();
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            res.setBody("General error("+t.getClass()+"): "+t.getMessage()+"\\r"+sw.toString());
+            res.setStatusCode(503);
+            return res;
         }
 
 	    return res;
