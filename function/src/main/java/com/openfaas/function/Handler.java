@@ -19,7 +19,6 @@ import com.openfaas.model.IRequest;
 import com.openfaas.model.IResponse;
 import com.openfaas.model.Response;
 
-import org.graalvm.compiler.asm.aarch64.AArch64Assembler.SystemHint;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 
