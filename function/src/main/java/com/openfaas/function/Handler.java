@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -13,10 +14,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.openfaas.model.IRequest;
 import com.openfaas.model.IResponse;
 import com.openfaas.model.Response;
 
+import org.graalvm.compiler.asm.aarch64.AArch64Assembler.SystemHint;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 
@@ -30,12 +33,12 @@ public class Handler extends com.openfaas.model.AbstractHandler {
 
     private static final String FIXTURE_PARAM = "fixtureId";
 
-    // public static final String FIXTURE_HOSTPORT = "rdomloge.entrydns.org:81";
-    public static final String FIXTURE_HOSTPORT = "catholicon-ms-matchcard-service.catholicon:84";
+    public static final String FIXTURE_HOSTPORT = "rdomloge.entrydns.org:81";
+    // public static final String FIXTURE_HOSTPORT = "catholicon-ms-matchcard-service.catholicon:84";
     public static final String FIXTURE_URL = "http://"+FIXTURE_HOSTPORT+"/fixtures/search/findByExternalFixtureId?externalFixtureId=%1$s";
 
-    // public static final String CLUBS_HOSTPORT = "rdomloge.entrydns.org:81";
-    public static final String CLUBS_HOSTPORT = "catholicon-ms-club-service.catholicon:85";
+    public static final String CLUBS_HOSTPORT = "rdomloge.entrydns.org:81";
+    // public static final String CLUBS_HOSTPORT = "catholicon-ms-club-service.catholicon:85";
     public static final String CLUBS_URL = "http://"+CLUBS_HOSTPORT+"/clubs/search/findClubByTeamId?teamId=%1$s";
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
@@ -70,7 +73,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             t.printStackTrace(pw);
-            res.setBody("General error("+t.getClass()+"): "+t.getMessage()+"\\r"+sw.toString());
+            res.setBody("General error("+t.getClass()+"): "+t.getMessage()+"\\n"+sw.toString());
             res.setStatusCode(503);
             return res;
         }
@@ -94,7 +97,7 @@ public class Handler extends com.openfaas.model.AbstractHandler {
 
     public static void main(String[] args) throws IOException, ParseException {
         Handler h = new Handler();
-        String merged = h.merge(2282);
+        String merged = h.merge(2381);
         System.out.println("Merged: "+merged);
     }
 
@@ -116,7 +119,24 @@ public class Handler extends com.openfaas.model.AbstractHandler {
             if(dayOfWeek == fixtureDate.getDayOfWeek()) return session;
         }
 
-        throw new RuntimeException("Could not find a matching session for date "+fixtureDateStr+" on "+fixtureDate.getDayOfWeek());
+        // the fixture date doesn't match any match session - maybe they are playing on a club night?
+        JsonElement clubSessions = club.get("clubSessions");
+        sessions = clubSessions.getAsJsonArray();
+        for(int i=0; i < sessions.size(); i++) {
+            JsonObject session = sessions.get(i).getAsJsonObject();
+            int dayOfWeek = daysAsJodaDayOfWeekInt(session.get("days").getAsString());
+            if(dayOfWeek == fixtureDate.getDayOfWeek()) {
+                JsonElement origLocatioName = session.get("locationName");
+                JsonPrimitive locationName = new JsonPrimitive(origLocatioName.getAsString()+" (club night)");
+                session.remove("locationName");
+                session.add("locationName", locationName);
+                System.out.println("Swapped in club night for match night session");
+                return session;
+            }
+        }
+
+        throw new RuntimeException(MessageFormat.format(
+            "Could not find matching (club or match) session for day of week {0} for club {1} which plays on {2}", fixtureDate.dayOfWeek().get(), club.get("clubName"), sessions));
     }
 
     public int daysAsJodaDayOfWeekInt(String days) {
